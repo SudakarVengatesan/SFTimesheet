@@ -28,7 +28,7 @@ namespace STimesheet
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
-            services.AddTransient<IMailService, Services.MailService>();
+            services.AddTransient<ILoginService, Services.LoginService>();
             services.AddControllers();
         }
 
