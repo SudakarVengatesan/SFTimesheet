@@ -12,22 +12,24 @@ namespace STimesheet.DBcontext
 {
     public class DataContext : DbContext
     {
+        public DataContext()
+        {
+        }
+
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
-        /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-         {
-             var builder = new ConfigurationBuilder()
-             .SetBasePath
-             (Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json");
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                var builder = new ConfigurationBuilder()
+            .SetBasePath
+            (Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json");
 
-
-
-             var configuration = builder.Build();
-             optionsBuilder.UseSqlServer(configuration.GetConnectionString("SQL"));
-            *//* optionsBuilder.Entity<TUserRole>().HasKey(r => new { r.UserId, r.RoleId })
-             .ToTable("AspNetUserRoles");*//*
-             //optionsBuilder.UseSqlServer(configuration.GetConnectionString("SQLRemoteConnection")); 
-         }*/
+                var configuration = builder.Build();
+                optionsBuilder.UseSqlServer(configuration.GetConnectionString("SQL"));
+            }
+        }
 
         public virtual DbSet<AspNetRoles> AspNetRoles { get; set; }
         public virtual DbSet<AspNetUserClaims> AspNetUserClaims { get; set; }
@@ -51,7 +53,7 @@ namespace STimesheet.DBcontext
         public virtual DbSet<UserCredentials> UserCredentials { get; set; }
         public virtual DbSet<UserType> UserType { get; set; }
 
+     }
 
-         
-   }
-}
+  }
+

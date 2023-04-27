@@ -28,9 +28,6 @@ namespace STimesheet.Controllers
         public LoginController(IConfiguration configuration)
         {
             this._configuration = configuration;
-          
-
-
         }
 
         [HttpPost]
@@ -54,8 +51,6 @@ namespace STimesheet.Controllers
                     Roles = userRoles.ToList()
                 };
                 return Ok(result);
-
-              
             }
             catch (Exception ex)
             {
@@ -88,10 +83,7 @@ namespace STimesheet.Controllers
             {
                 throw new Exception(ex.Message);
             }
-
-
         }
-
 
         [HttpPost]
         [Route("Encrypt")]
@@ -129,8 +121,8 @@ namespace STimesheet.Controllers
             var bytes = Convert.FromBase64String(base64);
             return Encoding.UTF8.GetString(bytes);
         }
-
-        
+        [HttpPost]
+        [Route("decode")]
         public string Decrypt(string cipherText)
         {
             string EncryptionKey = _configuration.GetSection("Key")["EncryptionKey"];
@@ -170,7 +162,6 @@ namespace STimesheet.Controllers
         {
             try
             {
-
                 MimeMessage email = new MimeMessage();
                 email.Sender = MailboxAddress.Parse(_configuration.GetSection("MailSettings")["Mail"]);
                 email.To.Add(MailboxAddress.Parse(request));
@@ -186,12 +177,9 @@ namespace STimesheet.Controllers
                 smtp.Authenticate(_configuration.GetSection("MailSettings")["Mail"], _configuration.GetSection("MailSettings")["Password"]);
                 await smtp.SendAsync(email);
                 smtp.Disconnect(true);
-
-
             }
             catch (Exception ex)
             {
-
                 throw;
             }
         }
