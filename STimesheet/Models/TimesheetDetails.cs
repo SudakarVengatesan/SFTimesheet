@@ -26,6 +26,7 @@ namespace STimesheet.Models
         public int UpdatedBy { get; set; }
         public string Starttime { get; set; }
         public string Endtime { get; set; }
+        public bool Submit { get; set; }
     }
 
 }

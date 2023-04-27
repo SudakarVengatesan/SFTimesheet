@@ -24,7 +24,6 @@ namespace STimesheet.Controllers
         public UserController(IConfiguration configuration)
         {
             this._configuration = configuration;           
-          
         }
 
         [HttpGet]
@@ -48,7 +47,6 @@ namespace STimesheet.Controllers
         {
             try
             {
-
                 TimesheetDetails addwork = new TimesheetDetails();
                 string format = "yyyy-MM-dd HH:mm:ss";
                 DateTime date = timesheet.Date;
@@ -75,8 +73,6 @@ namespace STimesheet.Controllers
                 db.TimesheetDetails.Add(addwork);
                 await db.SaveChangesAsync();
                 return Ok("Ok work added");
-               
-
             }
             catch(Exception ex)
             {
@@ -89,7 +85,6 @@ namespace STimesheet.Controllers
         {
             try
             {
-                //List<TimesheetDetails> details = await db.TimesheetDetails.Where(user => user.ID == Id).ToListAsync();
                 var query = from tsd in db.TimesheetDetails where tsd.ID == Id join proj in db.Project on tsd.ProjectID equals proj.ID select new
                             {tsd.ID, tsd.EmpID,tsd.ProjectID,tsd.TaskID,tsd.ClientID,tsd.Date,tsd.Hours,tsd.Notes,tsd.ApprovalStatus,tsd.ApprovedDate,tsd.ApprovedBy,tsd.ReviewComments,tsd.CreatedDate,
                              tsd.CreatedBy,tsd.UpdatedDate,tsd.UpdatedBy,tsd.Starttime,tsd.Endtime,proj.ProjectName,proj.ProjectType,proj.EstimationHrs,proj.SoNumber,proj.ProjectManager,
@@ -102,7 +97,100 @@ namespace STimesheet.Controllers
             {
                 return BadRequest($"Error ViewData: {ex.Message}");
             }
+        }
 
+        [HttpPut]
+        [Route("Updatedata")]
+        public async Task<ActionResult<List<TimesheetDetails>>> UpdateDataFromUser(int Id, TimesheetDetails timesheet)
+        {
+            try
+            {
+               TimesheetDetails existingRecord = await db.TimesheetDetails.FindAsync(Id);
+
+                if (existingRecord != null)
+                {
+                    string format = "yyyy-MM-dd HH:mm:ss";
+                    DateTime date = timesheet.Date;
+                    DateTime approvedDate = timesheet.ApprovedDate;
+                    DateTime createdate = timesheet.CreatedDate;
+                    DateTime updatedDate = timesheet.UpdatedDate;
+                    existingRecord.EmpID = timesheet.EmpID;
+                    existingRecord.ProjectID = timesheet.ProjectID;
+                    existingRecord.TaskID = timesheet.TaskID;
+                    existingRecord.ClientID = timesheet.ClientID;
+                    //existingRecord.Date = DateTime.ParseExact(date.ToString(format), format, CultureInfo.InvariantCulture);
+                    existingRecord.Hours = timesheet.Hours;
+                    existingRecord.Notes = timesheet.Notes;
+                    existingRecord.ApprovalStatus = timesheet.ApprovalStatus;
+                    existingRecord.ApprovedDate = DateTime.ParseExact(approvedDate.ToString(format), format, CultureInfo.InvariantCulture);
+                    existingRecord.ApprovedBy = timesheet.ApprovedBy;
+                    existingRecord.ReviewComments = timesheet.ReviewComments;
+                    existingRecord.CreatedDate = DateTime.ParseExact(createdate.ToString(format), format, CultureInfo.InvariantCulture);
+                    existingRecord.CreatedBy = timesheet.CreatedBy;
+                    existingRecord.UpdatedDate = DateTime.ParseExact(updatedDate.ToString(format), format, CultureInfo.InvariantCulture);
+                    existingRecord.UpdatedBy = timesheet.UpdatedBy;
+                    existingRecord.Starttime = timesheet.Starttime;
+                    existingRecord.Endtime = timesheet.Endtime;
+                    db.Entry(existingRecord).State = EntityState.Modified;
+                    await db.SaveChangesAsync();
+                    return Ok("Record updated successfully");
+                }
+                else
+                {
+                    return BadRequest($"Record with ID {Id} not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error updating record: {ex.Message}");
+            }
+        }
+
+        [HttpDelete]
+        [Route("Deletedata")]
+        public async Task<ActionResult<List<TimesheetDetails>>> DeleteDataFromUser(int Id)
+        {
+            try     
+            {
+                TimesheetDetails FindRecord = await db.TimesheetDetails.FindAsync(Id);
+                if (FindRecord == null)
+                {
+                    return NotFound();
+                }
+                db.TimesheetDetails.Remove(FindRecord);
+                await db.SaveChangesAsync();
+                return Ok("Record deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error Deleted record: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        [Route("Submitdata")]
+        public async Task<ActionResult<List<TimesheetDetails>>> SubmitDataFromUser(int EmpID)
+        {
+            try
+            {
+                List<TimesheetDetails> recordsToUpdate = await db.TimesheetDetails.Where(tsd => tsd.EmpID == EmpID).ToListAsync();
+
+                if (recordsToUpdate != null && recordsToUpdate.Any())
+                {
+                    recordsToUpdate.ForEach(r => r.Submit = true);
+                    await db.SaveChangesAsync();
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+                return Ok("Submit successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error Deleted record: {ex.Message}");
+            }
         }
 
 
