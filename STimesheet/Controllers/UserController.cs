@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using STimesheet.DBcontext;
+using STimesheet.Models.Modify_Class;
 
 namespace STimesheet.Controllers
 {
@@ -43,27 +44,31 @@ namespace STimesheet.Controllers
 
         [HttpPost]
         [Route("Addwork")]
-        public async Task<ActionResult<List<TimesheetDetails>>> GetTimesheetDetails([FromBody]TimesheetDetails timesheet)
+        public async Task<ActionResult<List<TimesheetDetails>>> GetTimesheetDetails([FromBody]AddWorks timesheet)
         {
             try
             {
+                int ProjectID = await db.Project.Where(x => x.ProjectName == timesheet.ProjectName).Select(x => x.ID).FirstOrDefaultAsync(); 
+                int ClientID = await db.Clients.Where(x => x.ClientName == timesheet.ClientName).Select(x => x.ID).FirstOrDefaultAsync();
+                int TaskID = await db.Tasks.Where(x => x.TaskName == timesheet.TaskName).Select(x => x.ID).FirstOrDefaultAsync();
+
                 TimesheetDetails addwork = new TimesheetDetails();
                 string format = "yyyy-MM-dd HH:mm:ss";
                 DateTime date = timesheet.Date;
-                DateTime approvedDate = timesheet.ApprovedDate;
+               // DateTime approvedDate = timesheet.ApprovedDate;
                 DateTime createdate = timesheet.CreatedDate;
                 DateTime updatedDate = timesheet.UpdatedDate;
                 addwork.EmpID = timesheet.EmpID;
-                addwork.ProjectID = timesheet.ProjectID;
-                addwork.TaskID = timesheet.TaskID;
-                addwork.ClientID = timesheet.ClientID;
+                addwork.ProjectID = ProjectID;
+                addwork.TaskID = TaskID;
+                addwork.ClientID = ClientID;
                 addwork.Date = DateTime.ParseExact(date.ToString(format), format, CultureInfo.InvariantCulture);
                 addwork.Hours = timesheet.Hours;
                 addwork.Notes = timesheet.Notes;
                 addwork.ApprovalStatus = timesheet.ApprovalStatus;           
-                addwork.ApprovedDate = DateTime.ParseExact(approvedDate.ToString(format), format, CultureInfo.InvariantCulture);
-                addwork.ApprovedBy = timesheet.ApprovedBy;
-                addwork.ReviewComments = timesheet.ReviewComments;
+                //addwork.ApprovedDate = DateTime.ParseExact(approvedDate.ToString(format), format, CultureInfo.InvariantCulture);
+                //addwork.ApprovedBy = timesheet.ApprovedBy;
+                //addwork.ReviewComments = timesheet.ReviewComments;
                 addwork.CreatedDate = DateTime.ParseExact(createdate.ToString(format), format, CultureInfo.InvariantCulture);
                 addwork.CreatedBy = timesheet.CreatedBy;
                 addwork.UpdatedDate = DateTime.ParseExact(updatedDate.ToString(format), format, CultureInfo.InvariantCulture);
@@ -85,12 +90,19 @@ namespace STimesheet.Controllers
         {
             try
             {
-                var query = from tsd in db.TimesheetDetails where tsd.ID == Id join proj in db.Project on tsd.ProjectID equals proj.ID select new
-                            {tsd.ID, tsd.EmpID,tsd.ProjectID,tsd.TaskID,tsd.ClientID,tsd.Date,tsd.Hours,tsd.Notes,tsd.ApprovalStatus,tsd.ApprovedDate,tsd.ApprovedBy,tsd.ReviewComments,tsd.CreatedDate,
-                             tsd.CreatedBy,tsd.UpdatedDate,tsd.UpdatedBy,tsd.Starttime,tsd.Endtime,proj.ProjectName,proj.ProjectType,proj.EstimationHrs,proj.SoNumber,proj.ProjectManager,
-                             proj.TeamLead,proj.StartDate,proj.EndDate,proj.Billable,proj.IsActive,proj.Deleted};
+                var query = from tsd in db.TimesheetDetails
+                            where tsd.ID == Id
+                            join proj in db.Project on tsd.ProjectID equals proj.ID
+                            join tak in db.Tasks on tsd.TaskID equals tak.ID                            
+                            join cli in db.Clients on tsd.ClientID equals cli.ID
+                            select new
+                            {
+                            
+                            tsd.ID, tsd.EmpID,proj.ProjectName,tak.TaskName,cli.ClientName,tsd.Date,tsd.Hours,tsd.Notes,tsd.ApprovalStatus,tsd.CreatedDate,
+                             tsd.CreatedBy,tsd.UpdatedDate,tsd.UpdatedBy,tsd.Starttime,tsd.Endtime,proj.Billable};
                 // Execute the query to get the results
                 var results = query.ToList();
+                
                 return Ok(results);
             }
             catch (Exception ex)
@@ -101,30 +113,32 @@ namespace STimesheet.Controllers
 
         [HttpPut]
         [Route("Updatedata")]
-        public async Task<ActionResult<List<TimesheetDetails>>> UpdateDataFromUser(int Id, TimesheetDetails timesheet)
+        public async Task<ActionResult<List<TimesheetDetails>>> UpdateDataFromUser(int Id, AddWorks timesheet)
         {
             try
             {
-               TimesheetDetails existingRecord = await db.TimesheetDetails.FindAsync(Id);
+                int ProjectID = await db.Project.Where(x => x.ProjectName == timesheet.ProjectName).Select(x => x.ID).FirstOrDefaultAsync();
+                int ClientID = await db.Clients.Where(x => x.ClientName == timesheet.ClientName).Select(x => x.ID).FirstOrDefaultAsync();
+                int TaskID = await db.Tasks.Where(x => x.TaskName == timesheet.TaskName).Select(x => x.ID).FirstOrDefaultAsync();
+                TimesheetDetails existingRecord = await db.TimesheetDetails.FindAsync(Id);
 
                 if (existingRecord != null)
                 {
                     string format = "yyyy-MM-dd HH:mm:ss";
                     DateTime date = timesheet.Date;
-                    DateTime approvedDate = timesheet.ApprovedDate;
+                    //DateTime approvedDate = timesheet.ApprovedDate;
                     DateTime createdate = timesheet.CreatedDate;
                     DateTime updatedDate = timesheet.UpdatedDate;
                     existingRecord.EmpID = timesheet.EmpID;
-                    existingRecord.ProjectID = timesheet.ProjectID;
-                    existingRecord.TaskID = timesheet.TaskID;
-                    existingRecord.ClientID = timesheet.ClientID;
-                    //existingRecord.Date = DateTime.ParseExact(date.ToString(format), format, CultureInfo.InvariantCulture);
+                    existingRecord.ProjectID = ProjectID;
+                    existingRecord.TaskID = TaskID;
+                    existingRecord.ClientID = ClientID;
                     existingRecord.Hours = timesheet.Hours;
                     existingRecord.Notes = timesheet.Notes;
                     existingRecord.ApprovalStatus = timesheet.ApprovalStatus;
-                    existingRecord.ApprovedDate = DateTime.ParseExact(approvedDate.ToString(format), format, CultureInfo.InvariantCulture);
-                    existingRecord.ApprovedBy = timesheet.ApprovedBy;
-                    existingRecord.ReviewComments = timesheet.ReviewComments;
+                    //existingRecord.ApprovedDate = DateTime.ParseExact(approvedDate.ToString(format), format, CultureInfo.InvariantCulture);
+                    //existingRecord.ApprovedBy = timesheet.ApprovedBy;
+                   // existingRecord.ReviewComments = timesheet.ReviewComments;
                     existingRecord.CreatedDate = DateTime.ParseExact(createdate.ToString(format), format, CultureInfo.InvariantCulture);
                     existingRecord.CreatedBy = timesheet.CreatedBy;
                     existingRecord.UpdatedDate = DateTime.ParseExact(updatedDate.ToString(format), format, CultureInfo.InvariantCulture);
@@ -157,7 +171,8 @@ namespace STimesheet.Controllers
                 {
                     return NotFound();
                 }
-                db.TimesheetDetails.Remove(FindRecord);
+                FindRecord.Deleted = true;
+                //db.TimesheetDetails.Remove(FindRecord);
                 await db.SaveChangesAsync();
                 return Ok("Record deleted successfully");
             }
@@ -193,7 +208,51 @@ namespace STimesheet.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("DropProject")]
+        public async Task<ActionResult<List<Project>>> DropProject()
+        {
+            try
+            {
+                List<string> projectNames = await db.Project.Select(p => p.ProjectName).ToListAsync();
+                return Ok(projectNames);
+            }
+           catch(Exception ex)
+            {
+                return BadRequest($"Error Project name getting:{ ex.Message}");
+            }
+        }
 
+        [HttpGet]
+        [Route("DropTask")]
+        public async Task<ActionResult<List<Tasks>>> DropTask()
+        {
+            try
+            {
+                List<string> TaskNames = await db.Tasks.Select(p => p.TaskName).ToListAsync();
+                return Ok(TaskNames);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error Task name getting:{ ex.Message}");
+            }
+        }
+
+
+        [HttpGet]
+        [Route("DropClient")]
+        public async Task<ActionResult<List<Tasks>>> DropClient()
+        {
+            try
+            {
+                List<string> ClientNames = await db.Clients.Select(p => p.ClientName).ToListAsync();
+                return Ok(ClientNames);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error Client Names getting:{ ex.Message}");
+            }
+        }
 
     }
 }

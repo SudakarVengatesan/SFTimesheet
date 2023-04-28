@@ -46,9 +46,12 @@ namespace STimesheet.Controllers
                     on role.Id equals userRole.RoleId
                     where userRole.UserId == user.Id
                     select role.Name;
+
                var result = new
                 {
-                    Roles = userRoles.ToList()
+                    Roles = userRoles.ToList(),
+                    Empid=user.EmpId
+                    
                 };
                 return Ok(result);
             }
