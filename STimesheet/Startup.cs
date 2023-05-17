@@ -29,7 +29,8 @@ namespace STimesheet
         {
             services.AddDbContext<DbContext>(options=>options.UseSqlServer(Configuration.GetConnectionString("SQL")));
             /*services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));*/
-           
+            services.AddCors(options => options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
+
             services.AddControllers();
         }
 
@@ -42,6 +43,7 @@ namespace STimesheet
             }
 
             app.UseHttpsRedirection();
+            app.UseCors();
 
             app.UseRouting();
 

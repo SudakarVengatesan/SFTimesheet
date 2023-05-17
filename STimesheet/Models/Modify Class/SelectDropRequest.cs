@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 
 namespace STimesheet.Models.Modify_Class
 {
-    public class Approve
+    public class SelectDropRequest
     {
-        public int EmpID { get; set; }
-
-        public int ID {get;set;}
-        public DateTime ApprovedDate { get; set; }
+        public List<string> names { get; set; }
+        public List<string> status { get; set; }
     }
+
 }
